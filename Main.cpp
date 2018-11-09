@@ -1,8 +1,10 @@
 #include <cstdlib>
+#include <cstring> 
 #include <array>
 #include <vector>
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <numeric>
 
 template<std::size_t N>
@@ -50,7 +52,6 @@ using ValueType2 = ValueDerived<struct3>;
 /** My dodgy variant - no std::variant in my version of Xcode, plus it's nice
     to have all the machinary visible, because I'm interested in the perf of
     the memory access patterns, not std::variant specifically.
-
     Obviously this is a super-dangerous footgun, not how you'd do this in reality!
 */
 struct TaggedUnion
@@ -71,6 +72,8 @@ struct TaggedUnion
 
             case Tag::type2:
                 return std::accumulate (value.t2.data.begin(), value.t2.data.end(), 0.0);
+
+            default: return 0.0;
         }
     }
 
@@ -83,9 +86,9 @@ struct TaggedUnion
 
     union Value
     {
-        Value() { new (&t0) ValueType1(); }
-        Value (const Value& o) { memcpy (this, &o, sizeof (Value)); }
-        ~Value() {  }
+        Value() { new (&t0) ValueType0(); }
+        Value (const Value& o) { std::memcpy (this, &o, sizeof (Value)); }
+        ~Value() { }
 
         ValueType0 t0;
         ValueType1 t1;
